@@ -14,6 +14,7 @@ import { IController } from 'nodels/models';
 import { mytest } from './controlers/test';
 import PostsController from './controlers/posts';
 import { UserController } from './controlers/user';
+import {errorMiddleware} from './middleWare/error.middleware';
 
 
 //#region mongo start
@@ -48,6 +49,7 @@ app.post('/', (request, response) => {
 
 initializeMiddlewares();
 initializeControllers(controllers);
+initializeErroHandling();
  
 
 app.listen(PORT, () => {
@@ -70,4 +72,8 @@ function initializeMiddlewares() {
 
 
 
+
+function initializeErroHandling() {
+    app.use(errorMiddleware);
+}
 

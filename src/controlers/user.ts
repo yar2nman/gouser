@@ -1,6 +1,7 @@
 import express from "express";
 import { IController } from "nodels/models";
 import * as admin from 'firebase-admin';
+import { HttpException } from "../middleWare/error.middleware";
 
 export class UserController implements IController {
 
@@ -29,9 +30,10 @@ export class UserController implements IController {
         this.router.patch(`${this.path}/:id`, this.modifyItem);
         this.router.delete(`${this.path}/:id`, this.deleteItem);
         this.router.post(this.path, this.createItem);
+        this.router.post(`${this.path}/:id/customclaim`, this.setCustomClaim);
 
     }
-    getAllItems(request: express.Request, response: express.Response) {
+    getAllItems(request: express.Request, response: express.Response, next: express.NextFunction) {
 
         var users: admin.auth.UserRecord[] = [];
         // List All Users.
@@ -48,10 +50,11 @@ export class UserController implements IController {
         })
         .catch((error) => {
             console.log('Error listing users:', error);
+            next(new HttpException(404, 'Error Listing users'));
         });
     }
 
-    getItemById(request: express.Request, response: express.Response) {
+    getItemById(request: express.Request, response: express.Response, next: express.NextFunction) {
         const id = request.params.id;
         admin
             .auth()
@@ -62,10 +65,11 @@ export class UserController implements IController {
                 console.log(`Successfully fetched user data: ${userRecord.toJSON()}`);
             })
             .catch((error) => {
+                next(new HttpException(404, `Can not get user ${id}`));
                 console.log('Error fetching user data:', error);
             });
     }
-    getItemByEmail(request: express.Request, response: express.Response) {
+    getItemByEmail(request: express.Request, response: express.Response, next: express.NextFunction) {
         const email = request.params.email;
         admin
             .auth()
@@ -77,15 +81,17 @@ export class UserController implements IController {
             })
             .catch((error) => {
                 console.log('Error fetching user data:', error);
+                next(new HttpException(404, `Can not get user ${email}`));
             });
     }
 
 
-    modifyItem(request: express.Request, response: express.Response) {
+    modifyItem(request: express.Request, response: express.Response, next: express.NextFunction) {
+        next(new HttpException(404, `Not implemented yet`));
         throw new Error("Method not implemented.");
     }
 
-    deleteItem(request: express.Request, response: express.Response) {
+    deleteItem(request: express.Request, response: express.Response, next: express.NextFunction) {
         const uid = request.params.id;
         admin
             .auth()
@@ -96,10 +102,11 @@ export class UserController implements IController {
             })
             .catch((error) => {
             console.log('Error deleting user:', error);
+            next(new HttpException(404, `Can not delete user ${uid}`));
             });
     }
     
-    createItem(request: express.Request, response: express.Response) {
+    createItem(request: express.Request, response: express.Response, next: express.NextFunction) {
         const user: any = request.body;
         admin
             .auth()
@@ -111,6 +118,28 @@ export class UserController implements IController {
             })
             .catch((error) => {
                 console.log('Error creating new user:', error);
+                next(new HttpException(404, `Could not create user`));
+            });
+    }
+
+    setCustomClaim(request: express.Request, response: express.Response, next: express.NextFunction) {
+        console.log('STARTING');
+        
+        const uid = request.params.id;
+        console.log(uid, '=========> UID');
+        
+        const customClaims: any = request.body;
+        admin
+            .auth()
+            .setCustomUserClaims(uid, customClaims)
+            .then(() => {
+                // See the UserRecord reference doc for the contents of userRecord.
+                console.log('Successfully set user claims:', customClaims);
+                response.send(customClaims);
+            })
+            .catch((error) => {
+                console.log('Error setting user claims:', error);
+                next(new HttpException(404, `Could not set user claims`));
             });
     }
 
