@@ -50,7 +50,7 @@ export class UserController implements IController {
         })
         .catch((error) => {
             console.log('Error listing users:', error);
-            next(new HttpException(404, 'Error Listing users'));
+            next(new HttpException(404, `Error Listing users: ${error.errorInfo.message}`));
         });
     }
 
@@ -65,7 +65,7 @@ export class UserController implements IController {
                 console.log(`Successfully fetched user data: ${userRecord.toJSON()}`);
             })
             .catch((error) => {
-                next(new HttpException(404, `Can not get user ${id}`));
+                next(new HttpException(404, `Can not get user ${id}: ${error.errorInfo.message}`));
                 console.log('Error fetching user data:', error);
             });
     }
@@ -81,7 +81,7 @@ export class UserController implements IController {
             })
             .catch((error) => {
                 console.log('Error fetching user data:', error);
-                next(new HttpException(404, `Can not get user ${email}`));
+                next(new HttpException(404, `Can not get user ${email}: ${error.errorInfo.message}`));
             });
     }
 
@@ -102,7 +102,7 @@ export class UserController implements IController {
             })
             .catch((error) => {
             console.log('Error deleting user:', error);
-            next(new HttpException(404, `Can not delete user ${uid}`));
+            next(new HttpException(404, `Can not delete user ${uid}: ${error.errorInfo.message}`));
             });
     }
     
@@ -118,7 +118,7 @@ export class UserController implements IController {
             })
             .catch((error) => {
                 console.log('Error creating new user:', error);
-                next(new HttpException(404, `Could not create user`));
+                next(new HttpException(404, `Could not create user: ${error.errorInfo.message}`));
             });
     }
 
@@ -138,8 +138,8 @@ export class UserController implements IController {
                 response.send(customClaims);
             })
             .catch((error) => {
-                console.log('Error setting user claims:', error);
-                next(new HttpException(404, `Could not set user claims`));
+                console.log('Error setting user claims:', error.errorInfo.message);
+                next(new HttpException(404,  error.errorInfo.message));
             });
     }
 

@@ -1,5 +1,6 @@
 import express from 'express';
 import mongoose = require("mongoose");
+import cors = require('cors');
 import 'dotenv/config';
 
 // middle wares
@@ -66,6 +67,7 @@ function initializeControllers(controllers: IController[]) {
 }
 
 function initializeMiddlewares() {
+  app.use(cors());
     app.use(json());
     app.use(looger);
 }
