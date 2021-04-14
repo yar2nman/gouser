@@ -43,7 +43,6 @@ export class UserController implements IController {
         .then((listUsersResult) => {
             listUsersResult.users.forEach((userRecord) => {
                 users.push(userRecord);
-            console.log('user', userRecord.toJSON());
             });
         }).then(() => {
             response.send(users);
@@ -62,7 +61,6 @@ export class UserController implements IController {
             .then((userRecord) => {
                 // See the UserRecord reference doc for the contents of userRecord.
                 response.send(userRecord)
-                console.log(`Successfully fetched user data: ${userRecord.toJSON()}`);
             })
             .catch((error) => {
                 next(new HttpException(404, `Can not get user ${id}: ${error.errorInfo.message}`));
@@ -77,7 +75,6 @@ export class UserController implements IController {
             .then((userRecord) => {
                 // See the UserRecord reference doc for the contents of userRecord.
                 response.send(userRecord)
-                console.log(`Successfully fetched user data: ${userRecord.toJSON()}`);
             })
             .catch((error) => {
                 console.log('Error fetching user data:', error);
@@ -87,8 +84,24 @@ export class UserController implements IController {
 
 
     modifyItem(request: express.Request, response: express.Response, next: express.NextFunction) {
-        next(new HttpException(404, `Not implemented yet`));
-        throw new Error("Method not implemented.");
+        console.log('batch reached');
+        
+        const uid = request.params.id;
+        console.log(uid);
+        
+        const user: admin.auth.UpdateRequest = request.body;        
+
+        console.log(user);
+        // response.send(user);
+        // return;
+
+        admin.auth()
+        .updateUser(uid, user)
+        .then(r => response.send(r))
+        .catch((error) => {
+            console.log('Error updating user:', error);
+            next(new HttpException(404, `Could not update user: ${error.errorInfo.message}`));
+        });
     }
 
     deleteItem(request: express.Request, response: express.Response, next: express.NextFunction) {
@@ -97,7 +110,6 @@ export class UserController implements IController {
             .auth()
             .deleteUser(uid)
             .then(() => {
-            console.log('Successfully deleted user');
             response.status(200).send(uid);
             })
             .catch((error) => {
@@ -114,7 +126,6 @@ export class UserController implements IController {
             .then((userRecord) => {
                 // See the UserRecord reference doc for the contents of userRecord.
                 response.send(userRecord.uid)
-                console.log('Successfully created new user:', userRecord.uid);
             })
             .catch((error) => {
                 console.log('Error creating new user:', error);
@@ -123,10 +134,8 @@ export class UserController implements IController {
     }
 
     setCustomClaim(request: express.Request, response: express.Response, next: express.NextFunction) {
-        console.log('STARTING');
         
         const uid = request.params.id;
-        console.log(uid, '=========> UID');
         
         const customClaims: any = request.body;
         admin
@@ -134,7 +143,6 @@ export class UserController implements IController {
             .setCustomUserClaims(uid, customClaims)
             .then(() => {
                 // See the UserRecord reference doc for the contents of userRecord.
-                console.log('Successfully set user claims:', customClaims);
                 response.send(customClaims);
             })
             .catch((error) => {
